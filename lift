@@ -1,0 +1,36 @@
+#!/usr/bin/python3
+
+import sys
+import os
+
+# Paths
+mcsema_lift_path = "/home/chase/software/remill/remill-build/tools/mcsema/mcsema-lift-4.0"
+idat_path = "~/software/ida-7.2/idat64"
+
+# Command syntax
+if len(sys.argv) < 2:
+        print("Syntax: ./lift <path to binary>")
+        exit()
+
+print("Cleaning up old files")
+os.system("rm lifted.bc")
+os.system("rm lifted.ll")
+
+print("Generating cfg for " + sys.argv[1])
+
+cmd = "mcsema-disass --disassembler " + idat_path + " --os linux --arch amd64 --output cfg.cfg --binary " + sys.argv[1] + " --entrypoint main --log_file log.txt"
+
+os.system(cmd)
+
+print("Lifting " + sys.argv[1] + " to LLVM bytecode")
+
+cmd = mcsema_lift_path + " --arch amd64 --os linux --cfg cfg.cfg --output lifted.bc"
+os.system(cmd)
+
+cmd = "llvm-dis lifted.bc"
+os.system(cmd)
+
+print("Cleaning up")
+#os.system("rm llvm-bytecode")
+os.system("rm cfg.cfg")
+os.system("rm log.txt")
