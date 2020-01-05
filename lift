@@ -7,14 +7,17 @@ import os
 mcsema_lift_path = "/home/chase/software/remill/remill-build/tools/mcsema/mcsema-lift-4.0"
 idat_path = "~/software/ida-7.2/idat64"
 
-# Command syntax
-if len(sys.argv) < 2:
-        print("Syntax: ./lift <path to binary>")
-        exit()
 
 print("Cleaning up old files")
 os.system("rm lifted.bc")
 os.system("rm lifted.ll")
+os.system("rm lifted.o")
+os.system("rm recompiled")
+
+# Command syntax
+if len(sys.argv) < 2:
+        print("Syntax: ./lift <path to binary>")
+        exit()
 
 print("Generating cfg for " + sys.argv[1])
 
@@ -27,10 +30,18 @@ print("Lifting " + sys.argv[1] + " to LLVM bytecode")
 cmd = mcsema_lift_path + " --arch amd64 --os linux --cfg cfg.cfg --output lifted.bc"
 os.system(cmd)
 
+print("Lifting bitcode to LLVM IR")
 cmd = "llvm-dis lifted.bc"
 os.system(cmd)
 
+print("Recompiling LLVM IR to assembly")
+cmd = "llc lifted.ll -filetype=obj --x86-asm-syntax=intel"
+os.system(cmd)
+
+print("Compiling assembly with gcc")
+cmd = "remill-clang-4.0 -rdynamic -O3 -o recompiled lifted.bc /usr/local/lib/libmcsema_rt64-4.0.a -llzma"
+os.system(cmd)
+
 print("Cleaning up")
-#os.system("rm llvm-bytecode")
 os.system("rm cfg.cfg")
 os.system("rm log.txt")
