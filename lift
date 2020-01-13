@@ -8,6 +8,7 @@ mcsema_lift_path = "/home/chase/software/remill/remill-build/tools/mcsema/mcsema
 idat_path = "~/software/ida-7.2/idat64"
 
 
+
 print("Cleaning up old files")
 os.system("rm lifted.bc")
 os.system("rm lifted.ll")
@@ -20,8 +21,10 @@ if len(sys.argv) < 2:
         exit()
 
 print("Generating cfg for " + sys.argv[1])
+print("Assuming executable is NOT PIE!!!!")
 
 cmd = "mcsema-disass --disassembler " + idat_path + " --os linux --arch amd64 --output cfg.cfg --binary " + sys.argv[1] + " --entrypoint main --log_file log.txt"
+#cmd = "mcsema-disass --pie-mode --disassembler " + idat_path + " --os linux --arch amd64 --output cfg.cfg --binary " + sys.argv[1] + " --entrypoint main --log_file log.txt"
 
 os.system(cmd)
 
@@ -39,6 +42,7 @@ cmd = "llc lifted.ll -filetype=obj --x86-asm-syntax=intel"
 os.system(cmd)
 
 print("Compiling assembly with gcc")
+#cmd = "remill-clang-4.0 -rdynamic -o recompiled lifted.bc /usr/local/lib/libmcsema_rt64-4.0.a -llzma"
 cmd = "remill-clang-4.0 -rdynamic -O3 -o recompiled lifted.bc /usr/local/lib/libmcsema_rt64-4.0.a -llzma"
 os.system(cmd)
 
