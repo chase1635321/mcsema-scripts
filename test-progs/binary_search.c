@@ -36,7 +36,6 @@ int main() {
    if (first > last)
       printf("Not found! %d isn't present in the list.\n", search);
  
-   exit(0)
    return 0;  
 
 }
